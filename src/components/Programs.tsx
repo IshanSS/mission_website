@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import Img1 from '../assets/first_image.jpeg'
+// import Img1 from '../assets/first_image.jpeg'
 import Img2 from '../assets/second_image.jpeg'
 import Img3 from '../assets/third_image.jpeg'
 import Img4 from '../assets/fourth_image.jpeg'
@@ -7,6 +7,7 @@ import computerClass from'../assets/computer_class.jpeg'
 import germanClass from '../assets/german_class.jpeg'
 import programmingClass from '../assets/programming_class.jpeg'
 import ieltsClass from '../assets/ielts_class.jpeg'
+import careerCounseling from '../assets/career_counsiling.jpeg'
 
 // Minimal local LazyImage used in Programs (keeps file independent)
 function LazyImageSmall({ src, alt }: { src: string; alt: string }) {
@@ -156,7 +157,7 @@ const SAMPLE_PROGRAMS: Program[] = [
     summary: 'Guidance for career choices, study abroad, and visa services.',
     duration: 'Consultation Basis',
     fee: 'Contact us',
-    image: Img1,
+    image: careerCounseling,
     details: 'Personalized career counseling and comprehensive support for international education pathways. Expert guidance on course selection, university applications, visa processes, and documentation requirements.',
     category: 'Counseling',
     level: 'All Levels',

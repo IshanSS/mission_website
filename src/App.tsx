@@ -11,10 +11,12 @@ import Gallery3 from './assets/fourth_image.jpeg'
 import Gallery4 from './assets/fifth_image.jpeg'
 import Gallery5 from './assets/sixth_image.jpeg'
 import Gallery7 from './assets/eighth_image.jpeg'
-import Team1 from './assets/first_image.jpeg'
+// import Team1 from './assets/first_image.jpeg'
 import Team2 from './assets/dipesh_sir.jpeg'
 import Team3 from './assets/sajan_sir.jpeg'
 import Team4 from './assets/rajkumar_sir.jpeg'
+import Team5 from './assets/shiba_ram_sir.jpeg'
+import Team6 from './assets/prabin_sir.jpeg'
 import { useState, useEffect } from 'react'
 
 function LazyImage(props: { src: string; srcSet?: string; sizes?: string; alt: string; className?: string; loading?: 'lazy' | 'eager' }) {
@@ -43,55 +45,82 @@ function App() {
   const [modalTitle, setModalTitle] = useState<string>('')
 
   useEffect(() => {
+    // Intercept clicks for Terms/Privacy and load content into an accessible modal.
     const handleFooterLinkClick = (e: MouseEvent) => {
+      // ensure we have an EventTarget that is Element-like
       const target = e.target as Element | null
       const anchor = target?.closest ? (target.closest('a') as HTMLAnchorElement | null) : null
       if (!anchor) return
-      const hrefRaw = anchor.getAttribute('href') || anchor.href
+
+      const hrefRaw = anchor.getAttribute('href') || anchor.href || ''
       if (!hrefRaw) return
 
-      // normalize and match paths that point to terms/privacy pages
-      const url = new URL(hrefRaw, window.location.href)
-      const path = url.pathname.replace(/\/+$/, '')
-      if (!/(\/terms(\.html)?|\/privacy(\.html)?)$/i.test(path)) return
+      // ignore hash-only anchors
+      if (hrefRaw.startsWith('#')) return
 
-      e.preventDefault()
-      const fallbackTitle = anchor.textContent?.trim() || (path.toLowerCase().includes('privacy') ? 'Privacy Policy' : 'Terms of Service')
+      // ignore links that explicitly open in a new tab or marked to skip remote handling
+      if (anchor.target === '_blank' || anchor.getAttribute('target') === '_blank') return
+      if (anchor.getAttribute('data-remote') === 'false') return
 
-      fetch(path, { credentials: 'same-origin' })
-        .then((res) => {
-          if (!res.ok) throw new Error('Network error')
-          return res.text()
-        })
-        .then((html) => {
-          try {
+      // Match links that include 'terms' or 'privacy' in filename or path
+      try {
+        const url = new URL(hrefRaw, window.location.href)
+        const pathname = url.pathname.toLowerCase()
+        if (!(/terms|privacy/.test(pathname))) return
+
+        // Prevent default navigation immediately (capture phase ensures we run before bubble handlers)
+        e.preventDefault()
+        // stop other handlers from running and stop default anchor action
+        e.stopImmediatePropagation?.()
+        e.stopPropagation?.()
+
+        const absHref = url.href
+        const fallbackTitle = anchor.textContent?.trim() || (pathname.includes('privacy') ? 'Privacy Policy' : 'Terms of Service')
+
+        fetch(absHref, { credentials: 'same-origin' })
+          .then((res) => {
+            if (!res.ok) throw new Error('Network error')
+            return res.text()
+          })
+          .then((html) => {
             const parser = new DOMParser()
             const doc = parser.parseFromString(html, 'text/html')
-            const bodyHtml = doc.body ? doc.body.innerHTML : html
-            const titleFromDoc = doc.querySelector('h1')?.textContent?.trim() || fallbackTitle
-            setModalHtml(bodyHtml)
+            // Prefer a main/wrap container if present, otherwise fallback to body innerHTML
+            const preferred =
+              doc.querySelector('.wrap') ||
+              doc.querySelector('main') ||
+              doc.querySelector('#content') ||
+              doc.querySelector('body')
+            const bodyHtml = preferred ? (preferred as Element).innerHTML : html
+            const titleFromDoc = (doc.querySelector('title')?.textContent?.trim())
+              || (doc.querySelector('h1')?.textContent?.trim())
+              || fallbackTitle
+
+            // wrap content to avoid collisions with app CSS and allow modal scrolling
+            setModalHtml(`<div class="external-modal__inner-content">${bodyHtml}</div>`)
             setModalTitle(titleFromDoc)
             setModalOpen(true)
-            // ensure page behind is not scrollable
+            // accessibility: prevent background scroll and focus close control after paint (no scroll)
             document.body.classList.add('no-scroll')
-            // move focus to close button shortly after render
             setTimeout(() => {
-              (document.querySelector('.external-modal__close') as HTMLButtonElement | null)?.focus()
-            }, 50)
-          } catch {
-            setModalHtml(html)
-            setModalTitle(fallbackTitle)
-            setModalOpen(true)
-          }
-        })
-        .catch(() => {
-          // fallback to normal navigation if fetch fails
-          window.location.href = path
-        })
+              const closeBtn = document.querySelector('.external-modal__close') as HTMLButtonElement | null
+              if (closeBtn) {
+                try { closeBtn.focus({ preventScroll: true }) } catch { closeBtn.focus() }
+              }
+            }, 60)
+          })
+          .catch(() => {
+            // fallback: navigate away if fetch fails
+            window.location.href = absHref
+          })
+      } catch {
+        // if URL parsing fails, do nothing
+      }
     }
 
-    document.addEventListener('click', handleFooterLinkClick)
-    return () => document.removeEventListener('click', handleFooterLinkClick)
+    // Use capture: true so we intercept the click before default navigation or other handlers
+    document.addEventListener('click', handleFooterLinkClick, true)
+    return () => document.removeEventListener('click', handleFooterLinkClick, true)
   }, [])
 
   // close on Escape
@@ -112,6 +141,20 @@ function App() {
       // clear HTML to free memory
       setModalHtml(null)
       setModalTitle('')
+    }
+  }, [modalOpen])
+
+  // ensure body scroll state is cleaned up and focus is restored when modal closes
+  useEffect(() => {
+    if (!modalOpen) {
+      document.body.classList.remove('no-scroll')
+      // ensure focus returns to footer link (best effort) without scrolling
+      setTimeout(() => {
+        const footerLink = document.querySelector('footer a[href$="privacy.html"], footer a[href$="terms.html"]') as HTMLAnchorElement | null
+        if (footerLink) {
+          try { footerLink.focus({ preventScroll: true }) } catch { footerLink.focus() }
+        }
+      }, 80)
     }
   }, [modalOpen])
 
@@ -170,7 +213,7 @@ function App() {
             <div className="team-grid">
               <article className="instructor-card">
                 <div className="instructor-media">
-                  <LazyImage src={Team1} alt="Instructor A" />
+                  <LazyImage src={Team5} alt="Instructor A" />
                 </div>
                 <div className="instructor-body">
                   <h3 className="instructor-name">Shiba Ram Ghimire</h3>
@@ -212,7 +255,7 @@ function App() {
               </article>
               <article className="instructor-card">
                 <div className="instructor-media">
-                  <LazyImage src={Team3} alt="Instructor D" />
+                  <LazyImage src={Team6} alt="Instructor D" />
                 </div>
                 <div className="instructor-body">
                   <h3 className="instructor-name">Prabin Lama</h3>

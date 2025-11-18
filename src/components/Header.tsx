@@ -70,7 +70,18 @@ export default function Header() {
     return () => window.removeEventListener("keydown", handleEscape);
   }, [open]);
 
-  const closeMenu = () => setOpen(false);
+  // small helper: smooth-scroll to page content
+  const scrollToContent = (opts: ScrollIntoViewOptions = { behavior: 'smooth' }) => {
+    const el = document.getElementById('content')
+    if (el) el.scrollIntoView(opts)
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const closeAndScroll = (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    setOpen(false)
+    scrollToContent({ behavior: 'smooth', block: 'start' } as ScrollIntoViewOptions)
+  }
 
   return (
     <header
@@ -81,10 +92,10 @@ export default function Header() {
       <div className="header-inner">
         {/* Logo */}
         <a 
-          href="#" 
+          href="#content" 
           className="logo-link" 
           aria-label="Mission World Education home" 
-          onClick={closeMenu}
+          onClick={(e) => closeAndScroll(e)}
         >
           <img 
             src={Mission_logo} 
@@ -102,30 +113,35 @@ export default function Header() {
           id="main-nav" 
           className={`nav ${open ? "open" : ""}`} 
           aria-label="Main navigation"
+          aria-hidden={!open}     /* hide from AT when closed on mobile */
         >
           <ul className="nav-list">
             <li>
-              <a className="nav-link" href="#" onClick={closeMenu}>
+              <a
+                className="nav-link"
+                href="#content"
+                onClick={(e) => { e.preventDefault(); closeAndScroll(); }}
+              >
                 Home
               </a>
             </li>
             <li>
-              <a className="nav-link" href="#programs" onClick={closeMenu}>
+              <a className="nav-link" href="#programs" onClick={() => setOpen(false)}>
                 Programs
               </a>
             </li>
             <li>
-              <a className="nav-link" href="#about" onClick={closeMenu}>
+              <a className="nav-link" href="#about" onClick={() => setOpen(false)}>
                 About
               </a>
             </li>
             <li>
-              <a className="nav-link" href="#gallery" onClick={closeMenu}>
+              <a className="nav-link" href="#gallery" onClick={() => setOpen(false)}>
                 Gallery
               </a>
             </li>
             <li>
-              <a className="nav-link" href="#contact" onClick={closeMenu}>
+              <a className="nav-link" href="#contact" onClick={() => setOpen(false)}>
                 Contact
               </a>
             </li>
@@ -134,21 +150,21 @@ export default function Header() {
 
         {/* Desktop CTA Button */}
         <div className="header-cta">
-          <a href="#contact" className="cta-button">
+          <a href="#contact" className="cta-button" onClick={() => setOpen(false)}>
             Get Started
           </a>
         </div>
 
         {/* Mobile Menu Toggle */}
         <button
-          type="button"
-          className="menu-toggle"
-          ref={menuToggleRef}
-          aria-controls="main-nav"
-          aria-expanded={open}
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen(!open)}
-        >
+           type="button"
+           className="menu-toggle"
+           ref={menuToggleRef}
+           aria-controls="main-nav"
+           aria-expanded={open}
+           aria-label={open ? "Close menu" : "Open menu"}
+           onClick={() => setOpen(!open)}
+         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             {open ? (
               // X icon (close)
