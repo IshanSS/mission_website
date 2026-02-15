@@ -379,7 +379,13 @@ export default function Programs({ showHeader = true }: ProgramsProps) {
 
       {/* Modal */}
       {active && (
-        <div className="program-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div
+          className="program-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          aria-describedby="modal-body"
+        >
           <div className="modal-backdrop" />
           <div className="modal-container" >
             <div
@@ -419,7 +425,7 @@ export default function Programs({ showHeader = true }: ProgramsProps) {
  </div>
 
                {/* Modal Body */}
-               <div className="modal-body">
+               <div id="modal-body" className="modal-body">
                  <div className="modal-highlights">
                    <div className="highlight-item">
                      <div className="highlight-icon">⏱</div>

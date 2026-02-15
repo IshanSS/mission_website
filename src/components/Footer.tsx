@@ -44,15 +44,15 @@ export default function Footer() {
               <div className="contact-item">
                 <span className="contact-icon">📞</span>
                 <div>
-                  <a href="tel:+9779841000000">+977 9851021384</a><br />
+                  <a href="tel:+9779851021384">+977 9851021384</a><br />
                   <a href='tel:+9779705426949'>+977 9705426949</a><br />
-                  <a href="tel:+977011111111">011 662440</a>
+                  <a href="tel:+977011662440">011 662440</a>
                 </div>
               </div>
               <div className="contact-item">
                 <span className="contact-icon">✉️</span>
                 <div>
-                  <a href="mailto:info@missionworld.edu">missioncomputer8@gmail.com</a>
+                  <a href="mailto:missioneducation505@gmail.com">missioneducation505@gmail.com</a>
                 </div>
               </div>
             </address>
