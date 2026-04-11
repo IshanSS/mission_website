@@ -13,7 +13,6 @@ export default function Header() {
   const headerRef = useRef<HTMLElement | null>(null);
   const menuToggleRef = useRef<HTMLButtonElement | null>(null);
 
-  // Scroll detection
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -28,7 +27,6 @@ export default function Header() {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  // Set header height
   useEffect(() => {
     const setHeaderHeight = () => {
       if (!headerRef.current) return;
@@ -46,7 +44,6 @@ export default function Header() {
     };
   }, []);
 
-  // Recalculate height when menu opens
   useEffect(() => {
     if (!headerRef.current) return;
     const measure = () => {
@@ -55,24 +52,23 @@ export default function Header() {
 
       const nav = document.getElementById("main-nav");
       if (open && nav) {
-        // calculate total visible height of nav items (safer than nav height when layout is complex)
-        const items = Array.from(nav.querySelectorAll('.nav-list > li')) as HTMLElement[];
+        const items = Array.from(nav.querySelectorAll(".nav-list > li")) as HTMLElement[];
         let total = 0;
         if (items.length) {
           for (const it of items) {
             const r = it.getBoundingClientRect();
-            // include margins
             const s = window.getComputedStyle(it);
-            const mt = parseFloat(s.marginTop || '0') || 0;
-            const mb = parseFloat(s.marginBottom || '0') || 0;
+            const mt = parseFloat(s.marginTop || "0") || 0;
+            const mb = parseFloat(s.marginBottom || "0") || 0;
             total += Math.ceil(r.height + mt + mb);
           }
         } else {
           total = Math.ceil(nav.getBoundingClientRect().height);
         }
 
-        // cap to available viewport space below header
-        const vh = window.innerHeight - (headerRef.current ? Math.ceil(headerRef.current.getBoundingClientRect().height) : 0);
+        const vh =
+          window.innerHeight -
+          (headerRef.current ? Math.ceil(headerRef.current.getBoundingClientRect().height) : 0);
         const panelH = Math.min(total + 16, Math.max(0, vh));
         document.documentElement.style.setProperty("--nav-panel-height", `${panelH}px`);
       } else {
@@ -80,7 +76,6 @@ export default function Header() {
       }
     };
 
-    // measure after layout stabilizes; do rAF and a short timeout to catch CSS transitions
     requestAnimationFrame(() => {
       measure();
       const t = setTimeout(measure, 80);
@@ -88,7 +83,6 @@ export default function Header() {
     });
   }, [open]);
 
-  // Scroll lock + focus management (html + body so iOS does not keep scrolling the page behind the panel)
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("no-scroll", open);
@@ -108,7 +102,6 @@ export default function Header() {
     };
   }, [open]);
 
-  // Close menu on large screens
   useEffect(() => {
     const onResize = () => {
       if (window.innerWidth > 920 && open) setOpen(false);
@@ -117,40 +110,33 @@ export default function Header() {
     return () => window.removeEventListener("resize", onResize);
   }, [open]);
 
-  // Close on Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && open) {
-        setOpen(false);
-      }
+      if (e.key === "Escape" && open) setOpen(false);
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [open]);
 
-  // Close when clicking outside the nav or toggle on small devices
   useEffect(() => {
     if (!open) return;
     const onDocClick = (e: Event) => {
-      const nav = document.getElementById('main-nav');
-      const toggle = document.querySelector('.menu-toggle');
+      const nav = document.getElementById("main-nav");
+      const toggle = document.getElementById("menu-toggle");
       const target = e.target as Node | null;
       if (!nav || !toggle || !target) return;
       if (nav.contains(target) || toggle.contains(target)) return;
       setOpen(false);
     };
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('touchstart', onDocClick);
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("touchstart", onDocClick);
     return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('touchstart', onDocClick);
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("touchstart", onDocClick);
     };
   }, [open]);
 
-  // Smooth scroll
-  const scrollToContent = (
-    opts: ScrollIntoViewOptions = { behavior: "smooth" }
-  ) => {
+  const scrollToContent = (opts: ScrollIntoViewOptions = { behavior: "smooth" }) => {
     const el = document.getElementById("content");
     if (el) el.scrollIntoView(opts);
     else window.scrollTo({ top: 0, behavior: "smooth" });
@@ -162,30 +148,34 @@ export default function Header() {
     scrollToContent({ behavior: "smooth", block: "start" });
   };
 
+  const linkBase =
+    "inline-flex items-center gap-3 rounded-xl px-4 py-3 text-center font-semibold text-slate-700 transition min-[921px]:inline-block min-[921px]:rounded-full min-[921px]:px-[0.65rem] min-[921px]:py-[0.45rem] min-[921px]:text-[0.95rem] hover:bg-brand/[0.08] hover:text-brand focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-brand/25 focus-visible:outline-offset-2 max-[920px]:w-full max-[920px]:justify-start max-[920px]:text-left";
+
   return (
     <header
       ref={headerRef}
-      className={`site-header ${scrolled ? "scrolled" : ""} ${
-        open ? "nav-open" : ""
-      }`}
+      className={`fixed inset-x-0 top-0 z-[1200] border-b border-slate-900/5 bg-white/95 backdrop-blur-md transition-[padding,box-shadow] duration-200 ${
+        scrolled ? "shadow-md shadow-slate-900/5 py-1" : "py-2"
+      } ${open ? "bg-white/98" : ""}`}
       role="banner"
     >
-      <div className="header-inner">
-        {/* Logo */}
+      <div className="relative mx-auto flex min-h-[52px] max-w-[1200px] items-center justify-between gap-3 px-3 min-[921px]:min-h-12 min-[921px]:px-3">
         <a
           href="#content"
-          className="logo-link"
+          className="focus-ring relative z-[1250] flex items-center gap-2.5 no-underline text-inherit"
           aria-label="Mission World Education home"
           onClick={closeAndScroll}
         >
           <img
             src={Mission_logo}
             alt="Mission World Education Logo"
-            className="logo"
+            className="h-9 w-auto min-[921px]:h-8 max-[520px]:h-8"
           />
-          <div className="brand">
-            <span className="brand-title">Mission World</span>
-            <span className="brand-sub">
+          <div className="flex flex-col text-left leading-none">
+            <span className="text-[0.95rem] font-extrabold text-slate-900 min-[921px]:text-[1.05rem]">
+              Mission World
+            </span>
+            <span className="mt-0.5 text-[0.75rem] text-slate-500 max-[520px]:hidden">
               Education & Consultancy
             </span>
           </div>
@@ -193,103 +183,64 @@ export default function Header() {
 
         <nav
           id="main-nav"
-          className={`nav ${open ? "open" : ""}`}
+          className={[
+            "flex flex-1 justify-center min-[921px]:relative min-[921px]:flex min-[921px]:flex-row",
+            "max-[920px]:fixed max-[920px]:left-0 max-[920px]:right-0 max-[920px]:top-[var(--header-height)] max-[920px]:z-[1403] max-[920px]:max-h-[calc(100vh-var(--header-height))] max-[920px]:touch-pan-y max-[920px]:flex-col max-[920px]:overflow-y-auto max-[920px]:bg-transparent max-[920px]:p-2 max-[920px]:shadow-none",
+            open ? "max-[920px]:flex" : "max-[920px]:hidden",
+          ].join(" ")}
           aria-label="Main navigation"
           aria-hidden={isMobileNav ? !open : false}
         >
-          <ul className="nav-list">
-            <li>
-              <a
-                className="nav-link"
-                href="#content"
-                onClick={(e) => {
-                  e.preventDefault();
-                  closeAndScroll();
-                }}
-              >
-                <span className="nav-icon" aria-hidden>
-                  {/* <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 11.5L12 4l9 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M5 21V12h14v9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg> */}
-                </span>
+          <ul className="m-0 flex list-none flex-row flex-wrap items-center justify-center gap-2 p-0 min-[921px]:gap-2 max-[920px]:mx-auto max-[920px]:mt-0 max-[920px]:w-full max-[920px]:max-w-lg max-[920px]:flex-col max-[920px]:flex-nowrap max-[920px]:gap-0 max-[920px]:overflow-y-auto max-[920px]:rounded-xl max-[920px]:bg-white max-[920px]:p-2 max-[920px]:shadow-lg max-[920px]:max-h-[calc(100vh-var(--header-height)-16px)]">
+            <li className="max-[920px]:w-full max-[920px]:border-b max-[920px]:border-slate-100 max-[920px]:last:border-b-0">
+              <a className={`nav-link ${linkBase}`} href="#content" onClick={(e) => { e.preventDefault(); closeAndScroll(); }}>
                 <span className="nav-text">Home</span>
               </a>
             </li>
-            <li>
-              <a className="nav-link" href="#programs" onClick={() => setOpen(false)}>
-                <span className="nav-icon" aria-hidden>
-                  {/* <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 6h18M3 10h18M7 14h10M7 18h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg> */}
-                </span>
+            <li className="max-[920px]:w-full max-[920px]:border-b max-[920px]:border-slate-100 max-[920px]:last:border-b-0">
+              <a className={`nav-link ${linkBase}`} href="#programs" onClick={() => setOpen(false)}>
                 <span className="nav-text">Programs</span>
               </a>
             </li>
-            <li>
-              <a className="nav-link" href="#about" onClick={() => setOpen(false)}>
-                <span className="nav-icon" aria-hidden>
-                  {/* <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6 20a6 6 0 0 1 12 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg> */}
-                </span>
+            <li className="max-[920px]:w-full max-[920px]:border-b max-[920px]:border-slate-100 max-[920px]:last:border-b-0">
+              <a className={`nav-link ${linkBase}`} href="#about" onClick={() => setOpen(false)}>
                 <span className="nav-text">About</span>
               </a>
             </li>
-            <li>
-              <a className="nav-link" href="#gallery" onClick={() => setOpen(false)}>
-                <span className="nav-icon" aria-hidden>
-                  {/* <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="3" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M8 8h.01M21 21l-6-6-4 4-3-3-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg> */}
-                </span>
+            <li className="max-[920px]:w-full max-[920px]:border-b max-[920px]:border-slate-100 max-[920px]:last:border-b-0">
+              <a className={`nav-link ${linkBase}`} href="#gallery" onClick={() => setOpen(false)}>
                 <span className="nav-text">Gallery</span>
               </a>
             </li>
-            <li>
-              <a className="nav-link" href="#contact" onClick={() => setOpen(false)}>
-                <span className="nav-icon" aria-hidden>
-                  {/* <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21 8v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M3 8l9 6 9-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg> */}
-                </span>
+            <li className="max-[920px]:w-full max-[920px]:border-b max-[920px]:border-slate-100 max-[920px]:last:border-b-0">
+              <a className={`nav-link ${linkBase}`} href="#contact" onClick={() => setOpen(false)}>
                 <span className="nav-text">Contact</span>
               </a>
             </li>
           </ul>
         </nav>
 
-        {/* Desktop CTA */}
-        <div className="header-cta">
+        <div className="ml-2 hidden min-[921px]:block">
           <a
             href="#contact"
-            className="cta-button"
+            className="focus-ring inline-block rounded-xl bg-gradient-to-r from-brand to-brand-gold px-4 py-2 text-sm font-bold text-white shadow-md shadow-brand/15 no-underline transition hover:-translate-y-0.5 hover:shadow-lg"
             onClick={() => setOpen(false)}
           >
             Get Started
           </a>
         </div>
 
-        {/* Mobile Toggle */}
         <button
           type="button"
-          className="menu-toggle"
+          id="menu-toggle"
+          className="focus-ring absolute right-3 top-1/2 z-[1405] inline-flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-lg border border-slate-900/10 bg-white/95 p-2 text-slate-700 shadow-md min-[921px]:hidden"
           ref={menuToggleRef}
           aria-controls="main-nav"
           aria-expanded={open}
           aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen(!open)}
         >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             {open ? (
               <path
                 d="M6 18L18 6M6 6l12 12"
@@ -311,10 +262,9 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile Menu Backdrop */}
-      <div 
-        className={`nav-backdrop ${open ? "visible" : ""}`} 
-        onClick={() => setOpen(false)} 
+      <div
+        className={`fixed inset-x-0 bottom-0 z-[1402] bg-slate-900/45 max-[920px]:top-[var(--header-height)] min-[921px]:hidden ${open ? "block" : "hidden"}`}
+        onClick={() => setOpen(false)}
         aria-hidden={!open}
       />
     </header>

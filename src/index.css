@@ -1,161 +1,122 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  /* Unified green-only palette (both tokens set to same green) */
-  --c-green: #22a269;        /* primary green */
-  --c-gold: #22a269;         /* set gold -> same green so theme is uniformly green */
-  --accent: var(--c-green);
-  --accent-2: var(--c-gold);
-  --accent-rgb: 34,162,105;   /* 0x22a269 */
-  --accent-2-rgb: 34,162,105; /* same as primary so rgba(...) uses green */
-
-  /* page background: warm coral -> cream gradient with fallback */
-  --page-bg: linear-gradient(180deg, #fff5f3 0%, #fffdf8 100%);
-  /* subtle vignette overlay to add depth */
-  --page-overlay-1: radial-gradient(circle at 10% 10%, rgba(var(--accent-rgb),0.03), transparent 18%);
-  --page-overlay-2: radial-gradient(circle at 90% 90%, rgba(var(--accent-2-rgb),0.02), transparent 18%);
-  --page-overlay: var(--page-overlay-1), var(--page-overlay-2);
-  background: var(--page-overlay), var(--page-bg);
-
-  /* keep light color-scheme and readable text color */
-  color-scheme: light;
-  color: #111827;
-  background: var(--page-overlay), var(--page-bg);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-brand: #22a269;
+  --color-brand-gold: #f2b936;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  /* use a column flex layout so #root can stretch and push footer to the bottom */
-  display: flex;
-  flex-direction: column;
-  min-width: 320px;
-  min-height: 100vh;
-  background: var(--page-overlay), var(--page-bg);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
-  color: inherit;
-  overscroll-behavior-y: contain;
-  overflow-x: hidden; /* extra protection against horizontal scroll on mobiles */
-  padding-left: env(safe-area-inset-left, 0);
-  padding-right: env(safe-area-inset-right, 0);
+/* Program cards entrance */
+@keyframes slide-up-card {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background: transparent; /* neutral by default; components set colored backgrounds */
-  color: inherit;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-/* Accessible "Skip to content" link */
-.skip-link {
-  position: absolute;
-  top: -48px;
-  left: 1rem;
-  background: #111827;
-  color: #fff;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  z-index: 9999;
-  transition: top 160ms ease, opacity 160ms ease;
-  opacity: 0.98;
-  text-decoration: none;
-  font-weight: 700;
-  box-shadow: 0 6px 18px rgba(2,6,23,0.16);
-}
-.skip-link:focus {
-  top: 1rem;
-  opacity: 1;
-  outline: none;
-}
-
-/* Improve focus-visible for interactive elements */
-:focus {
-  outline: none;
-}
-:focus-visible {
-  outline: 4px solid rgba(var(--accent-rgb),0.18);
-  outline-offset: 3px;
-}
-
-/* Global box-sizing and safe-area */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* Smooth scrolling and prevent accidental horizontal scroll on mobile */
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-}
-
-/* ensure body cannot overflow horizontally on small devices and respect safe area */
-body {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  min-width: 320px;
-  min-height: 100vh;
-  background: var(--page-overlay), var(--page-bg);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
-  color: inherit;
-  overscroll-behavior-y: contain;
-  overflow-x: hidden; /* extra protection against horizontal scroll on mobiles */
-  padding-left: env(safe-area-inset-left, 0);
-  padding-right: env(safe-area-inset-right, 0);
-}
-
-@media (prefers-color-scheme: light) {
+@layer base {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --header-height: 4.5rem;
   }
-  a:hover {
-    color: #747bff;
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-height) + 8px);
+    @apply overflow-x-hidden antialiased;
   }
-  button {
-    background-color: #f9f9f9;
+
+  body {
+    @apply m-0 flex min-h-screen min-w-[320px] flex-col overflow-x-hidden text-slate-900;
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+    overscroll-behavior-y: contain;
+    background:
+      radial-gradient(circle at 10% 10%, rgb(34 162 105 / 0.04), transparent 18%),
+      radial-gradient(circle at 90% 90%, rgb(242 185 54 / 0.03), transparent 18%),
+      linear-gradient(180deg, #fff5f3 0%, #fffdf8 100%);
+    background-attachment: fixed;
+    background-size: cover;
+  }
+
+  #root {
+    @apply flex min-h-screen flex-1 flex-col;
+  }
+
+  img {
+    @apply block h-auto max-w-full;
+  }
+}
+
+/* Scroll lock when mobile menu / modals open */
+html.no-scroll,
+body.no-scroll {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+body.no-scroll {
+  height: 100%;
+}
+
+@layer components {
+  .skip-link {
+    @apply absolute left-4 z-[10000] rounded-md bg-slate-900 px-3 py-2 font-bold text-white opacity-0 shadow-lg transition-all duration-150;
+    top: -3rem;
+    text-decoration: none;
+  }
+  .skip-link:focus {
+    @apply top-4 opacity-100 outline-none;
+  }
+
+  .blur-up {
+    @apply block w-full scale-[1.02] bg-slate-100 opacity-[0.98];
+    filter: blur(12px);
+    transition:
+      filter 420ms ease,
+      transform 420ms ease,
+      opacity 320ms ease;
+  }
+  .blur-up.loaded {
+    @apply scale-100 opacity-100;
+    filter: blur(0);
+  }
+
+  /* Fetched legal HTML inside modal */
+  .external-modal__inner-content {
+    @apply text-slate-700;
+  }
+  .external-modal__inner-content h1,
+  .external-modal__inner-content h2,
+  .external-modal__inner-content h3 {
+    @apply mt-4 mb-2 font-bold text-slate-900;
+  }
+  .external-modal__inner-content p,
+  .external-modal__inner-content li {
+    @apply my-2 leading-relaxed;
+  }
+  .external-modal__inner-content a {
+    @apply text-brand underline;
+  }
+}
+
+@layer utilities {
+  .focus-ring {
+    @apply outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-brand/20 focus-visible:outline-offset-[3px];
   }
 }

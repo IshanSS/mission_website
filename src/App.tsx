@@ -1,8 +1,7 @@
-import './App.css'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Hero from './components/Hero'
-import Programs from './components/Programs'  
+import Programs from './components/Programs'
 import About from './components/About'
 import Contact from './components/Contact'
 import Gallery1 from './assets/second_image.jpeg'
@@ -11,7 +10,6 @@ import Gallery3 from './assets/fourth_image.jpeg'
 import Gallery4 from './assets/fifth_image.jpeg'
 import Gallery5 from './assets/sixth_image.jpeg'
 import Gallery7 from './assets/eighth_image.jpeg'
-// import Team1 from './assets/first_image.jpeg'
 import Team2 from './assets/dipesh_sir.jpeg'
 import Team3 from './assets/sajan_sir.jpeg'
 import Team4 from './assets/rajkumar_sir.jpeg'
@@ -19,27 +17,31 @@ import Team5 from './assets/shiba_ram_sir.jpeg'
 import Team6 from './assets/prabin_sir.jpeg'
 import React, { useState, useEffect, useRef } from 'react'
 
-/* --- ErrorBoundary: catches render errors and shows a small fallback UI --- */
-class ErrorBoundary extends React.Component<any, { hasError: boolean; message?: string }> {
-  constructor(props: any) {
+type ErrorBoundaryProps = { children: React.ReactNode }
+type ErrorBoundaryState = { hasError: boolean; message?: string }
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = { hasError: false }
   }
   static getDerivedStateFromError(err: Error) {
     return { hasError: true, message: err?.message || 'Something went wrong' }
   }
-  // componentDidCatch(error: Error, info: any) {
-  //   // lightweight reporting hook (expand to remote logger if desired)
-  //   // console.error('ErrorBoundary caught', error, info)
-  // }
   render() {
     if (this.state.hasError) {
       return (
-        <div className="error-boundary" role="alert" style={{ padding: 24, textAlign: 'center' }}>
-          <h2>Sorry — an unexpected error occurred</h2>
-          <p style={{ color: '#6b7280' }}>{this.state.message}</p>
-          <div style={{ marginTop: 12 }}>
-            <button onClick={() => window.location.reload()} className="cta-button">Reload page</button>
+        <div className="p-6 text-center" role="alert">
+          <h2 className="text-xl font-bold text-slate-900">Sorry — an unexpected error occurred</h2>
+          <p className="mt-2 text-slate-500">{this.state.message}</p>
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="focus-ring rounded-xl bg-gradient-to-r from-brand to-brand-gold px-5 py-3 font-bold text-white shadow-lg"
+            >
+              Reload page
+            </button>
           </div>
         </div>
       )
@@ -48,7 +50,6 @@ class ErrorBoundary extends React.Component<any, { hasError: boolean; message?: 
   }
 }
 
-/* small helper: fetch with timeout and abort support */
 async function fetchWithTimeout(input: RequestInfo, init?: RequestInit, timeout = 8000) {
   const controller = new AbortController()
   const id = setTimeout(() => controller.abort(), timeout)
@@ -62,7 +63,14 @@ async function fetchWithTimeout(input: RequestInfo, init?: RequestInit, timeout 
   }
 }
 
-function LazyImage(props: { src: string; srcSet?: string; sizes?: string; alt: string; className?: string; loading?: 'lazy' | 'eager' }) {
+function LazyImage(props: {
+  src: string
+  srcSet?: string
+  sizes?: string
+  alt: string
+  className?: string
+  loading?: 'lazy' | 'eager'
+}) {
   const { src, srcSet, sizes, alt, className, loading = 'lazy' } = props
   const [loaded, setLoaded] = useState(false)
   const [srcState, setSrcState] = useState(src)
@@ -75,10 +83,9 @@ function LazyImage(props: { src: string; srcSet?: string; sizes?: string; alt: s
       alt={alt}
       loading={loading}
       decoding="async"
-      className={`${className ?? ''} blur-up ${loaded ? 'loaded' : ''}`}
+      className={`${className ?? ''} blur-up h-full w-full object-cover ${loaded ? 'loaded' : ''}`}
       onLoad={() => setLoaded(true)}
       onError={() => {
-        // fallback to a 1x1 transparent GIF to keep layout stable
         setSrcState('data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=')
         setLoaded(true)
       }}
@@ -86,30 +93,30 @@ function LazyImage(props: { src: string; srcSet?: string; sizes?: string; alt: s
   )
 }
 
+const instructorBtnOutline =
+  'focus-ring inline-flex items-center justify-center rounded-full border-2 border-slate-900/10 bg-transparent px-3 py-2 text-sm font-bold text-slate-700 no-underline transition hover:bg-slate-50'
+const instructorBtnSecondary =
+  'focus-ring inline-flex items-center justify-center rounded-full border border-slate-900/10 bg-slate-100 px-3 py-2 text-sm font-bold text-slate-900 no-underline transition hover:bg-slate-200'
+
 function App() {
-  // Modal for showing /terms.html and /privacy.html inline
   const [modalOpen, setModalOpen] = useState(false)
   const [modalHtml, setModalHtml] = useState<string | null>(null)
   const [modalTitle, setModalTitle] = useState<string>('')
   const [modalHref, setModalHref] = useState<string | null>(null)
 
-  // keep reference to last focused element to restore after modals
   const lastFocusedRef = useRef<HTMLElement | null>(null)
 
-  // ensure main is marked aria-hidden when external modal is open for screen readers
   useEffect(() => {
     const mainEl = document.querySelector('main')
     if (modalOpen) mainEl?.setAttribute('aria-hidden', 'true')
     else mainEl?.removeAttribute('aria-hidden')
   }, [modalOpen])
 
-  // Focus trap for modal (simple, works for single modal at a time)
   useEffect(() => {
     if (!modalOpen) return
-    const modal = document.querySelector('.external-modal') as HTMLElement | null
+    const modal = document.getElementById('external-document-modal')
     if (!modal) return
 
-    // collect focusable elements inside modal
     const focusable = Array.from(
       modal.querySelectorAll<HTMLElement>(
         'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
@@ -118,9 +125,12 @@ function App() {
 
     const first = focusable[0] ?? null
     const last = focusable[focusable.length - 1] ?? null
-    // ensure focus lands inside modal (without scrolling)
     if (first) {
-      try { first.focus({ preventScroll: true }) } catch { first.focus() }
+      try {
+        first.focus({ preventScroll: true })
+      } catch {
+        first.focus()
+      }
     }
 
     const onKey = (e: KeyboardEvent) => {
@@ -142,22 +152,21 @@ function App() {
     return () => document.removeEventListener('keydown', onKey)
   }, [modalOpen])
 
-  // Ensure body scroll lock is consistent with modalOpen state
   useEffect(() => {
     if (modalOpen) document.body.classList.add('no-scroll')
     else document.body.classList.remove('no-scroll')
     return () => document.body.classList.remove('no-scroll')
   }, [modalOpen])
-  
-  // Close modal on Escape
+
   useEffect(() => {
     if (!modalOpen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setModalOpen(false) }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setModalOpen(false)
+    }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [modalOpen])
 
-  // Replace footer link click fetch usage with timeout-protected fetch
   useEffect(() => {
     const handleFooterLinkClick = (e: MouseEvent) => {
       const target = e.target as Element | null
@@ -173,17 +182,17 @@ function App() {
       try {
         const url = new URL(hrefRaw, window.location.href)
         const pathname = url.pathname.toLowerCase()
-        if (!(/terms|privacy/.test(pathname))) return
+        if (!/terms|privacy/.test(pathname)) return
 
         e.preventDefault()
         e.stopImmediatePropagation?.()
         e.stopPropagation?.()
 
-        // remember focus
         lastFocusedRef.current = document.activeElement as HTMLElement | null
 
         const absHref = url.href
-        const fallbackTitle = anchor.textContent?.trim() || (pathname.includes('privacy') ? 'Privacy Policy' : 'Terms of Service')
+        const fallbackTitle =
+          anchor.textContent?.trim() || (pathname.includes('privacy') ? 'Privacy Policy' : 'Terms of Service')
 
         fetchWithTimeout(absHref, { credentials: 'same-origin' }, 9000)
           .then((res) => {
@@ -194,8 +203,7 @@ function App() {
             const parser = new DOMParser()
             const doc = parser.parseFromString(html, 'text/html')
 
-            // remove potentially harmful/external resources
-            doc.querySelectorAll('script, iframe, link[rel="stylesheet"]').forEach(n => n.remove())
+            doc.querySelectorAll('script, iframe, link[rel="stylesheet"]').forEach((n) => n.remove())
 
             const preferred =
               doc.querySelector('#content') ||
@@ -204,9 +212,10 @@ function App() {
               doc.body
 
             const bodyHtml = preferred ? (preferred as Element).innerHTML : html
-            const titleFromDoc = (doc.querySelector('title')?.textContent?.trim())
-              || (doc.querySelector('h1')?.textContent?.trim())
-              || fallbackTitle
+            const titleFromDoc =
+              doc.querySelector('title')?.textContent?.trim() ||
+              doc.querySelector('h1')?.textContent?.trim() ||
+              fallbackTitle
 
             setModalHtml(`<div class="external-modal__inner-content">${bodyHtml}</div>`)
             setModalTitle(titleFromDoc)
@@ -217,16 +226,19 @@ function App() {
             setTimeout(() => {
               const closeBtn = document.querySelector('.external-modal__close') as HTMLButtonElement | null
               if (closeBtn) {
-                try { closeBtn.focus({ preventScroll: true }) } catch { closeBtn.focus() }
+                try {
+                  closeBtn.focus({ preventScroll: true })
+                } catch {
+                  closeBtn.focus()
+                }
               }
             }, 60)
           })
           .catch(() => {
-            // fallback: allow normal navigation
             window.location.href = absHref
           })
       } catch {
-        // if URL parsing fails, allow default
+        /* allow default */
       }
     }
 
@@ -234,7 +246,6 @@ function App() {
     return () => document.removeEventListener('click', handleFooterLinkClick, true)
   }, [])
 
-  // restore focus after modal closes (already done); keep it robust
   useEffect(() => {
     if (!modalOpen) {
       setTimeout(() => {
@@ -242,235 +253,260 @@ function App() {
           if (lastFocusedRef.current) {
             lastFocusedRef.current.focus({ preventScroll: true } as FocusOptions)
           } else {
-            const footerLink = document.querySelector('footer a[href*="privacy"], footer a[href*="terms"]') as HTMLAnchorElement | null
+            const footerLink = document.querySelector(
+              'footer a[href*="privacy"], footer a[href*="terms"]'
+            ) as HTMLAnchorElement | null
             if (footerLink) footerLink.focus({ preventScroll: true } as FocusOptions)
           }
         } catch {
-          // ignore focus restore errors
+          /* ignore */
         }
       }, 80)
     }
   }, [modalOpen])
 
+  const team = [
+    {
+      img: Team5,
+      name: 'Shiba Ram Ghimire',
+      role: 'Managing Director',
+      bio: '10+ years experience in management and leadership.',
+    },
+    {
+      img: Team2,
+      name: 'Dipesh Timalsina',
+      role: 'Computer Instructor',
+      bio: 'Computer instructor with special expertise in software applications and hardware troubleshooting.',
+    },
+    {
+      img: Team3,
+      name: 'Sajan Khulal',
+      role: 'German Instructor',
+      bio: 'German Instructor with expertise in language teaching and cultural exchange.',
+    },
+    {
+      img: Team6,
+      name: 'Prabin Lama',
+      role: 'IELTS Instructor',
+      bio: 'IELTS specialist with extensive experience in exam preparation and coaching.',
+    },
+    {
+      img: Team3,
+      name: 'Srijana Shrestha',
+      role: 'Japanese Language Instructor',
+      bio: 'Japan',
+    },
+    {
+      img: Team4,
+      name: 'Raj Kumar Ghimire (Rajan)',
+      role: 'Academic Tutor',
+      bio: 'Dedicated to helping students excel in their academic pursuits.',
+    },
+  ]
+
   return (
     <>
-      {/* accessible skip link */}
-      <a className="skip-link" href="#content">Skip to content</a>
+      <a className="skip-link" href="#content">
+        Skip to content
+      </a>
       <ErrorBoundary>
         <Header />
 
-        {/* main content */}
-        <main id="content" className="site-main">
+        <main
+          id="content"
+          className="flex-1 pt-[calc(var(--header-height,4.5rem)+8px)] transition-[padding] duration-200"
+        >
           <Hero />
 
-          {/* Gallery */}
-          <section id="gallery" className="gallery" aria-label="Campus photos">
-            <div className="gallery-inner">
-              <h2 className="gallery-title">Gallery</h2>
-              <p className="gallery-sub">A few snapshots from our facilites and student activities.</p>
-              <div className="gallery-grid">
-                <figure className="gallery-item">
-                  <LazyImage src={Gallery1} alt="Students collaborating" />
-                </figure>
-                <figure className="gallery-item">
-                  <LazyImage src={Gallery2} alt="Campus building" />
-                </figure>
-                <figure className="gallery-item">
-                  <LazyImage src={Gallery3} alt="Lecture in progress" />
-                </figure>
-                <figure className="gallery-item">
-                  <LazyImage src={Gallery4} alt="Graduation ceremony" />
-                </figure>
-                <figure className="gallery-item">
-                  <LazyImage src={Gallery5} alt="Library area" />
-                </figure>
-                {/* <figure className="gallery-item">
-                  <LazyImage src={Gallery6} alt="Student lounge" />
-                </figure> */}
-                <figure className="gallery-item">
-                  <LazyImage src={Gallery7} alt="Outdoor campus area" />
-                </figure>
+          <section id="gallery" className="w-full px-4 py-4 min-[768px]:px-6" aria-label="Campus photos">
+            <div className="mx-auto max-w-[1400px] text-left">
+              <h2 className="mb-1 text-xl font-bold text-slate-900">Gallery</h2>
+              <p className="mb-4 text-slate-500">A few snapshots from our facilites and student activities.</p>
+              <div className="grid grid-cols-2 gap-4 min-[640px]:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] min-[920px]:gap-5 min-[920px]:[grid-template-columns:repeat(auto-fit,minmax(280px,1fr))] max-[420px]:grid-cols-1">
+                {[Gallery1, Gallery2, Gallery3, Gallery4, Gallery5, Gallery7].map((src, i) => (
+                  <figure
+                    key={i}
+                    className="group overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5"
+                  >
+                    <LazyImage
+                      src={src}
+                      alt="Campus gallery"
+                      className="h-[180px] w-full object-cover transition duration-300 group-hover:scale-105 min-[640px]:h-[240px] min-[920px]:h-[280px] max-[420px]:h-[220px]"
+                    />
+                  </figure>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Programs section */}
           <Programs />
-
-          {/* About section */}
           <About />
 
-          {/* Team / Instructors */}
-          <section id="team" className="team-section" aria-labelledby="team-title">
-            <div className="team-inner">
-              <h2 id="team-title">Meet Our Instructors</h2>
-              <p className="team-sub">Experienced trainers and counsellors committed to your success.</p>
-              <div className="team-grid">
-                <article className="instructor-card">
-                  <div className="instructor-media">
-                    <LazyImage src={Team5} alt="Instructor A" />
-                  </div>
-                  <div className="instructor-body">
-                    <h3 className="instructor-name">Shiba Ram Ghimire</h3>
-                    <p className="instructor-role">Managing Director</p>
-                    <p className="instructor-bio">10+ years experience in management and leadership.</p>
-                    <div className="instructor-actions">
-                      <a className="action-button outline" href="mailto:missioncomputer8@gmail.com">Contact</a>
-                      <a className="action-button secondary" href="#contact">Book Session</a>
+          <section
+            id="team"
+            className="bg-gradient-to-b from-white to-slate-50 px-4 py-12 min-[768px]:px-6"
+            aria-labelledby="team-title"
+          >
+            <div className="mx-auto max-w-[1200px] text-left">
+              <h2 id="team-title" className="mb-2 text-2xl font-bold text-slate-900">
+                Meet Our Instructors
+              </h2>
+              <p className="mb-6 text-slate-500">
+                Experienced trainers and counsellors committed to your success.
+              </p>
+              <div className="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 min-[1024px]:grid-cols-3">
+                {team.map((m) => (
+                  <article
+                    key={m.name}
+                    className="flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5"
+                  >
+                    <div className="overflow-hidden">
+                      <LazyImage src={m.img} alt={m.name} className="h-[220px] w-full object-cover" />
                     </div>
-                  </div>
-                </article>
-                <article className="instructor-card">
-                  <div className="instructor-media">
-                    <LazyImage src={Team2} alt="Instructor B" />
-                  </div>
-                  <div className="instructor-body">
-                    <h3 className="instructor-name">Dipesh Timalsina</h3>
-                    <p className="instructor-role">Computer Instructor</p>
-                    <p className="instructor-bio">Computer instructor with special expertise in software applications and hardware troubleshooting.</p>
-                    <div className="instructor-actions">
-                      <a className="action-button outline" href="mailto:missioncomputer8@gmail.com">Contact</a>
-                      <a className="action-button secondary" href="#contact">Book Session</a>
+                    <div className="flex flex-1 flex-col gap-2 p-4">
+                      <h3 className="m-0 text-base font-bold text-slate-900">{m.name}</h3>
+                      <p className="m-0 text-[0.95rem] font-semibold text-slate-500">{m.role}</p>
+                      <p className="m-0 flex-1 text-slate-700">{m.bio}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a className={instructorBtnOutline} href="mailto:missioncomputer8@gmail.com">
+                          Contact
+                        </a>
+                        <a className={instructorBtnSecondary} href="#contact">
+                          Book Session
+                        </a>
+                      </div>
                     </div>
-                  </div>
-                </article>
-                <article className="instructor-card">
-                  <div className="instructor-media">
-                    <LazyImage src={Team3} alt="Instructor C" />
-                  </div>
-                  <div className="instructor-body">
-                    <h3 className="instructor-name">Sajan Khulal</h3>
-                    <p className="instructor-role">German Instructor</p>
-                    <p className="instructor-bio">German Instructor with expertise in language teaching and cultural exchange.</p>
-                    <div className="instructor-actions">
-                      <a className="action-button outline" href="mailto:missioncomputer8@gmail.com">Contact</a>
-                      <a className="action-button secondary" href="#contact">Book Session</a>
-                    </div>
-                  </div>
-                </article>
-                <article className="instructor-card">
-                  <div className="instructor-media">
-                    <LazyImage src={Team6} alt="Instructor D" />
-                  </div>
-                  <div className="instructor-body">
-                    <h3 className="instructor-name">Prabin Lama</h3>
-                    <p className="instructor-role">IELTS Instructor</p>
-                    <p className="instructor-bio">IELTS specialist with extensive experience in exam preparation and coaching.</p>
-                    <div className="instructor-actions">
-                      <a className="action-button outline" href="mailto:missioncomputer8@gmail.com">Contact</a>
-                      <a className="action-button secondary" href="#contact">Book Session</a>
-                    </div>
-                  </div>
-                </article>
-                <article className="instructor-card">
-                  <div className="instructor-media">
-                    <LazyImage src={Team3} alt="Instructor E" />
-                  </div>
-                  <div className="instructor-body">
-                    <h3 className="instructor-name">Srijana Shrestha</h3>
-                    <p className="instructor-role">Japanese Language Instructor</p>
-                    <p className="instructor-bio">Japan</p>
-                    <div className="instructor-actions">
-                      <a className="action-button outline" href="mailto:missioncomputer8@gmail.com">Contact</a>
-                      <a className="action-button secondary" href="#contact">Book Session</a>
-                    </div>
-                  </div>
-                </article>
-                <article className="instructor-card">
-                  <div className="instructor-media">
-                    <LazyImage src={Team4} alt="Instructor F" />
-                  </div>
-                  <div className="instructor-body">
-                    <h3 className="instructor-name">Raj Kumar Ghimire (Rajan)</h3>
-                    <p className="instructor-role">Academic Tutor</p>
-                    <p className="instructor-bio">Dedicated to helping students excel in their academic pursuits.</p>
-                    <div className="instructor-actions">
-                      <a className="action-button outline" href="mailto:missioncomputer8@gmail.com">Contact</a>
-                      <a className="action-button secondary" href="#contact">Book Session</a>
-                    </div>
-                  </div>
-                </article>
+                  </article>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Contact & Apply */}
           <Contact />
-
         </main>
 
         <Footer />
       </ErrorBoundary>
 
-      {/* Inline modal to show static Terms/Privacy pages when footer links are clicked */}
       {modalOpen && (
         <div
-          className="external-modal"
+          id="external-document-modal"
+          className="fixed inset-0 z-[17000] flex items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(8,10,14,0.45)_0%,rgba(8,10,14,0.6)_60%)] p-4 backdrop-blur-md min-[980px]:p-8"
           role="dialog"
           aria-modal="true"
           aria-labelledby="external-modal-title"
           aria-describedby="external-modal-content"
-          onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false) }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setModalOpen(false)
+          }}
         >
-          <div className="external-modal__inner" role="document" tabIndex={-1}>
+          <div
+            className="relative grid max-h-[calc(100vh-2rem)] w-full max-w-[1280px] grid-cols-1 overflow-hidden rounded-2xl border border-slate-900/5 bg-gradient-to-b from-white to-slate-50 shadow-2xl min-[980px]:grid-cols-[420px_1fr] min-[980px]:gap-7 [animation:modal-pop_0.36s_cubic-bezier(0.2,0.9,0.2,1)]"
+            role="document"
+            tabIndex={-1}
+          >
+            <div
+              className="hidden min-[980px]:block min-[980px]:bg-gradient-to-b min-[980px]:from-brand/12 min-[980px]:to-brand/5"
+              aria-hidden
+            />
             <button
-              className="external-modal__close"
+              type="button"
+              className="focus-ring absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-slate-900/5 bg-gradient-to-b from-white to-slate-100 shadow-lg min-[980px]:right-[18px] min-[980px]:top-[18px] min-[980px]:h-[52px] min-[980px]:w-[52px]"
               aria-label="Close"
               onClick={() => setModalOpen(false)}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden focusable="false"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden focusable="false">
+                <path
+                  d="M18 6L6 18M6 6l12 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
-            <header className="external-modal__header">
-              <h2 id="external-modal-title">{modalTitle}</h2>
+            <header className="col-span-1 px-5 pb-2 pt-6 min-[980px]:col-start-2 min-[980px]:px-9 min-[980px]:pt-9">
+              <h2 id="external-modal-title" className="m-0 text-xl font-extrabold tracking-tight text-slate-900 min-[980px]:text-[1.9rem]">
+                {modalTitle}
+              </h2>
             </header>
 
-            {/* If fetched HTML exists, render it. Otherwise render a polished fallback summary */}
             {modalHtml ? (
               <div
                 id="external-modal-content"
-                className="external-modal__content"
+                className="col-span-1 max-h-[50vh] overflow-y-auto px-5 pb-5 text-[1.03rem] leading-relaxed text-slate-700 min-[980px]:col-start-2 min-[980px]:max-h-[min(60vh,calc(100vh-220px))] min-[980px]:max-w-none min-[980px]:px-9 [&_img]:my-4 [&_img]:block [&_img]:h-auto [&_img]:max-w-full"
                 dangerouslySetInnerHTML={{ __html: modalHtml }}
               />
             ) : (
-              <div id="external-modal-content" className="external-modal__content">
-                <div className="external-modal__fallback">
-                  <p className="external-modal__lead">About {modalTitle || 'this document'}</p>
-                  <p>
-                    Mission World is committed to delivering practical, career‑ready
-                    programs that combine hands‑on training, mentorship and real world
-                    outcomes. Below is a short summary to help you get started.
+              <div
+                id="external-modal-content"
+                className="col-span-1 max-h-[50vh] overflow-y-auto px-5 pb-5 text-slate-700 min-[980px]:col-start-2 min-[980px]:max-h-[min(60vh,calc(100vh-220px))] min-[980px]:px-9"
+              >
+                <div className="mx-auto max-w-[70ch] py-1">
+                  <p className="mb-2 text-[1.05rem] font-bold text-slate-900">
+                    About {modalTitle || 'this document'}
                   </p>
-
-                  <ul className="external-modal__feature-list" aria-hidden>
-                    <li><strong>Practical curriculum</strong> — industry-aligned, project based learning.</li>
-                    <li><strong>Experienced instructors</strong> — practitioners & certified trainers.</li>
-                    <li><strong>Placement support</strong> — resume & interview prep plus employer network.</li>
+                  <p className="leading-relaxed">
+                    Mission World is committed to delivering practical, career‑ready programs that combine hands‑on
+                    training, mentorship and real world outcomes. Below is a short summary to help you get started.
+                  </p>
+                  <ul className="my-3 list-disc space-y-2 pl-5 text-slate-600" aria-hidden>
+                    <li>
+                      <strong>Practical curriculum</strong> — industry-aligned, project based learning.
+                    </li>
+                    <li>
+                      <strong>Experienced instructors</strong> — practitioners & certified trainers.
+                    </li>
+                    <li>
+                      <strong>Placement support</strong> — resume & interview prep plus employer network.
+                    </li>
                   </ul>
-
-                  <div className="external-modal__example-card">
-                    <h3>Quick facts</h3>
-                    <div className="external-modal__facts">
-                      <div><strong>Duration</strong><br/>3–6 months</div>
-                      <div><strong>Format</strong><br/>Hybrid (online & on-site)</div>
-                      <div><strong>Level</strong><br/>Beginner → Advanced</div>
+                  <div className="my-4 rounded-xl border border-brand/10 bg-gradient-to-b from-brand/[0.04] to-brand/[0.02] p-4">
+                    <h3 className="m-0 text-base font-bold text-slate-900">Quick facts</h3>
+                    <div className="mt-3 grid grid-cols-3 gap-3 text-sm text-slate-700">
+                      <div>
+                        <strong>Duration</strong>
+                        <br />
+                        3–6 months
+                      </div>
+                      <div>
+                        <strong>Format</strong>
+                        <br />
+                        Hybrid (online & on-site)
+                      </div>
+                      <div>
+                        <strong>Level</strong>
+                        <br />
+                        Beginner → Advanced
+                      </div>
                     </div>
                   </div>
-
-                  <p className="external-modal__note">
-                    For full details you can open the original page in a new tab.
-                  </p>
+                  <p className="mt-3 text-slate-500">For full details you can open the original page in a new tab.</p>
                 </div>
               </div>
             )}
-            <footer className="external-modal__footer">
-              <div className="external-modal__footer-left">
-                <small className="external-modal__source" aria-hidden>{modalHref ?? ''}</small>
-              </div>
-              <div className="external-modal__footer-actions">
+            <footer className="col-span-1 flex flex-col-reverse gap-3 border-t border-slate-900/5 bg-gradient-to-t from-white to-transparent px-5 py-4 min-[980px]:col-start-2 min-[980px]:flex-row min-[980px]:items-center min-[980px]:justify-between min-[980px]:px-9">
+              <small className="break-all text-xs text-slate-500 opacity-95" aria-hidden>
+                {modalHref ?? ''}
+              </small>
+              <div className="flex flex-col gap-2 min-[980px]:flex-row min-[980px]:items-center">
                 {modalHref && (
-                  <a className="action-button secondary" href={modalHref} target="_blank" rel="noopener noreferrer">Open original</a>
+                  <a
+                    className="focus-ring inline-flex w-full items-center justify-center rounded-full border border-slate-900/10 px-4 py-2.5 text-center text-sm font-bold text-slate-900 no-underline transition hover:bg-slate-50 min-[980px]:w-auto"
+                    href={modalHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Open original
+                  </a>
                 )}
-                <button className="action-button primary" onClick={() => { /* placeholder: could open apply form */ window.alert('Apply action') }}>Apply Now</button>
+                <button
+                  type="button"
+                  className="focus-ring inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-gold px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-brand/15 min-[980px]:w-auto"
+                  onClick={() => window.alert('Apply action')}
+                >
+                  Apply Now
+                </button>
               </div>
             </footer>
           </div>
