@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import MissionFavicon from './assets/Mission_logo.svg'
+import MissionFavicon from './assets/mission_logo.svg'
 
 // Set a default document title and basic meta tags for SEO / mobile
 if (typeof document !== 'undefined') {
