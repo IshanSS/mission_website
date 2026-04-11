@@ -2,6 +2,7 @@
 
 :root{
   --c-green: #22a269;
+  --header-height: 72px;
   --c-gold: #f2b936;
   --accent: var(--c-green);
   --accent-2: var(--c-gold);
@@ -18,10 +19,20 @@
 /* Base reset */
 *{box-sizing:border-box}
 html,body,#root{height:100%}
-body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+html{scroll-padding-top:calc(var(--header-height,72px) + 8px);overflow-x:clip}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:clip}
 
 /* Container */
 .container{max-width:1100px;margin:0 auto;padding:0 1rem}
+
+/* Ensure main content sits below the fixed header by using the header height set at runtime */
+.site-main{
+  padding-top: calc(var(--header-height, 72px) + var(--nav-panel-height, 0px) + 8px);
+  transition: padding-top 180ms ease;
+}
+
+/* Make images responsive by default */
+img{max-width:100%;height:auto;display:block}
 
 /* Header */
 .site-header{position:fixed;inset:0 0 auto 0;z-index:1400;background:rgba(255,255,255,0.96);backdrop-filter:blur(6px);border-bottom:1px solid rgba(15,23,42,0.06);padding:0.5rem 1rem;transition:padding 180ms ease,box-shadow 180ms ease}
@@ -40,16 +51,31 @@ body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI'
 
 .menu-toggle{display:none;background:transparent;border:0;padding:.4rem;border-radius:10px;cursor:pointer}
 
-/* Mobile header behavior: make nav a horizontal scrollable strip */
-@media (max-width:920px){
-  .header-inner{flex-wrap:wrap;padding-right:1rem;gap:.5rem}
-  .nav{display:flex!important;width:100%;order:2;margin-top:.5rem;gap:.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;justify-content:flex-start;padding:0 .5rem}
-  .nav-list{display:flex;gap:.5rem;align-items:center;justify-content:flex-start;width:max-content}
-  .nav-link{white-space:nowrap;padding:.55rem .9rem;border-radius:12px;background:transparent;border:1px solid rgba(15,23,42,0.06);color:#374151}
-  .nav-link:hover,.nav-link:focus{background:rgba(var(--accent-rgb),0.06);color:var(--accent)}
-  .header-cta{order:3;width:100%;display:flex;justify-content:center;margin-top:.5rem}
-  .menu-toggle{display:none!important}
+/* (Removed duplicate mobile header block — consolidated rules are used later) */
+
+/* Force main content offset to match the compact header on small screens (override JS-set variable if present) */
+@media (max-width: 920px) {
+  .site-main { padding-top: calc(var(--header-height,60px) + var(--nav-panel-height,0px) + 8px) !important; }
 }
+
+/* Tighter header on small screens to reduce height and prevent crowding */
+@media (max-width: 920px) {
+  .site-header { padding: 0.35rem 0.75rem; }
+  .header-inner { min-height: 52px; align-items: center; }
+  .logo { height: 2.2rem; }
+  .brand-title { font-size: 0.95rem; }
+  .header-cta { display: none; }
+}
+
+@media (max-width: 520px) {
+  .site-header { padding: 0.25rem 0.6rem; }
+  .logo { height: 2rem; }
+  .brand-title { font-size: 0.9rem; }
+}
+
+/* (Removed duplicate final override and full-vertical-menu block — consolidated block handles these behaviors) */
+
+
 
 @media (max-width:520px){
   .nav-link{font-size:.95rem;padding:.5rem .75rem}
@@ -57,7 +83,7 @@ body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI'
 }
 
 /* Hero */
-.hero{display:flex;gap:2rem;padding:2rem 0;align-items:center}
+.hero{display:flex;gap:2rem;padding:2rem 0;align-items:center;background-size:cover;background-position:center}
 .hero .lead{flex:1}
 .hero .media{flex:1;display:flex;justify-content:center}
 
@@ -94,6 +120,12 @@ body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI'
 @media (max-width:820px){.gallery{grid-template-columns:repeat(3,1fr)}.hero{flex-direction:column}.nav{display:none}.menu-toggle{display:inline-flex}}
 @media (max-width:520px){.gallery{grid-template-columns:repeat(2,1fr)}.program-card img{height:140px}}
 @media (max-width:380px){.gallery{grid-template-columns:1fr}.modal{max-width:100%;height:100%;border-radius:0}}
+
+/* Ensure programs grid collapses to a single column on very small screens to avoid overflow */
+@media (max-width:420px) {
+  .programs-grid { grid-template-columns: 1fr !important; gap: 0.75rem; }
+  .program-card { width: 100%; }
+}
 
 /* Modal (authoritative, responsive, accessible) */
 .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.25rem}
@@ -154,17 +186,22 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 
 /* Header — refreshed, professional & mobile-first */
 /* ===== HEADER COMPONENT STYLES ===== */
-.no-scroll {
-  overflow: hidden;
+html.no-scroll,
+body.no-scroll {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+body.no-scroll {
+  height: 100%;
 }
 
 .site-header {
   position: fixed;
   inset: 0 0 auto 0;
-  z-index: 1400;
+  z-index: 1200;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   padding: 0.5rem 1rem;
   overflow: visible;
   transition: padding 180ms ease, box-shadow 180ms ease, transform 180ms ease;
@@ -254,8 +291,8 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
     margin-top: 0.5rem;
   }
 
-  /* hide hamburger toggle to avoid duplicate controls */
-  .menu-toggle { display: none !important; visibility: hidden; pointer-events: none; }
+  /* show hamburger toggle on small screens */
+  .menu-toggle { display: inline-flex !important; visibility: visible; pointer-events: auto; }
 }
 
 /* very small screens */
@@ -322,6 +359,8 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   flex: 1;
 }
 
+/* (Removed duplicate nav/toggle fixes — consolidated mobile-nav block replaces these rules) */
+
 .nav-list {
   display: flex;
   gap: 0.5rem;
@@ -347,6 +386,13 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   background: rgba(var(--accent-rgb), 0.08);
   color: var(--accent);
   transform: translateY(-2px);
+}
+
+/* Desktop nav: labels only (no leading SVG icons) */
+@media (min-width: 921px) {
+  .site-header .nav-icon {
+    display: none !important;
+  }
 }
 
 /* active nav background uses subtle translucent accent */
@@ -1041,7 +1087,7 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 }
 
 .hero-title {
-  font-size: 1.5rem;
+  font-size: clamp(1.65rem, 4.5vw, 2.75rem);
   line-height: 1.2;
   font-weight: 800;
   margin: 0.5rem 0 1rem;
@@ -1114,9 +1160,6 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
     padding: 3rem 1.25rem;
     min-height: 70vh;
   }
-  .hero-title {
-    font-size: 2.1rem;
-  }
   .hero-sub {
     font-size: 1rem;
   }
@@ -1124,9 +1167,6 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 @media (max-width: 520px) {
   .hero {
     min-height: 60vh;
-  }
-  .hero-title {
-    font-size: 1.8rem;
   }
   .hero-sub {
     font-size: 0.95rem;
@@ -1304,10 +1344,12 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 /* Programs Grid */
 /* Programs Section - Beautiful Design */
 .programs-section {
-  padding: 5rem 1rem;
+  padding: clamp(2.5rem, 6vw, 5rem) clamp(0.75rem, 3vw, 1.25rem);
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
   min-height: 100vh;
   position: relative;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .programs-section::before {
@@ -1342,7 +1384,7 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 }
 
 .section-title {
-  font-size: 3.5rem;
+  font-size: clamp(1.75rem, 5vw, 3.25rem);
   font-weight: 800;
   background: linear-gradient(135deg, #fff 0%, #f0f9ff 100%);
   -webkit-background-clip: text;
@@ -1350,15 +1392,17 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   background-clip: text;
   margin-bottom: 1rem;
   line-height: 1.1;
+  padding: 0 0.25rem;
 }
 
 .section-subtitle {
-  font-size: 1.25rem;
+  font-size: clamp(0.95rem, 2.4vw, 1.2rem);
   color: rgba(255, 255, 255, 0.9);
-  max-width: 600px;
+  max-width: 36rem;
   margin: 0 auto 2rem;
   line-height: 1.6;
   font-weight: 500;
+  padding: 0 0.5rem;
 }
 
 .header-decoration {
@@ -1395,9 +1439,9 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 .programs-controls {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 2rem;
-  margin-bottom: 3rem;
+  border-radius: clamp(16px, 3vw, 24px);
+  padding: clamp(1rem, 4vw, 2rem);
+  margin-bottom: clamp(1.5rem, 4vw, 3rem);
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.1),
     0 2px 8px rgba(0, 0, 0, 0.05);
@@ -1490,11 +1534,11 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   align-items: center;
 }
 
-/* Programs Grid */
+/* Programs Grid — fluid columns for laptop + mobile */
 .programs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
   margin-bottom: 3rem;
 }
 
@@ -1663,10 +1707,10 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   margin-top: auto;
 }
 
-.price {
+.program-card .card-footer .price {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--accent);
 }
 
 .card-button {
@@ -1764,28 +1808,9 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 1;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(10px);
-}
-
-.modal-container {
-  position: relative;
-  width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  overflow: hidden;
-}
-
-.modal-content {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(40px);
-  border-radius: 32px;
-  overflow: hidden;
-  box-shadow: 
-    0 32px 64px rgba(0, 0, 0, 0.2),
-    0 16px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Responsive improvements for program modal */
@@ -1803,6 +1828,8 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 
 /* modal container adapts to viewport and becomes a column so header remains visible */
 .modal-container {
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
@@ -1810,18 +1837,236 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   flex-direction: column;
   max-height: calc(100vh - 2rem);
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: clamp(12px, 2vw, 20px);
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* content becomes scrollable region */
 .modal-content {
+  position: relative;
   background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   width: 100%;
   overflow: hidden;
   max-height: 100%;
+  border-radius: inherit;
   box-shadow: 0 30px 80px rgba(2,6,23,0.2);
+  animation: modalSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button.modal-backdrop {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  font-size: 0;
+  color: transparent;
+}
+
+.modal-title-section {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.modal-title-section h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.modal-category {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+}
+
+.modal-summary {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.modal-popular-tag {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2;
+  background: linear-gradient(135deg, rgba(var(--accent-2-rgb), 1), rgba(var(--accent-rgb), 1));
+  color: #fff;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.modal-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.highlight-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.highlight-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  margin-bottom: 0.15rem;
+}
+
+.highlight-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.modal-fee {
+  color: var(--accent);
+}
+
+.modal-details h3,
+.modal-features h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.modal-details {
+  margin-bottom: 1.25rem;
+}
+
+.modal-details p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+
+.modal-features {
+  margin-bottom: 1rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 0.5rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  background: rgba(var(--accent-rgb), 0.06);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.feature-check {
+  flex-shrink: 0;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.modal-actions .action-button.primary {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #fff !important;
+  border: none;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.25);
+}
+
+.modal-actions .action-button.primary:hover {
+  transform: translateY(-2px);
+}
+
+.modal-actions .action-button.secondary {
+  background: #f1f5f9;
+  color: #0f172a !important;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  text-decoration: none;
+}
+
+.modal-actions .action-button.outline {
+  background: transparent;
+  color: #475569 !important;
+  border: 2px solid rgba(15, 23, 42, 0.12);
+  text-decoration: none;
+}
+
+.modal-actions .action-button.outline:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.modal-close {
+  position: absolute;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  color: #334155;
 }
 
 /* header (image + title section) sits on top and will stack on small screens */
@@ -1834,6 +2079,7 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 
 /* ensure modal image doesn't overflow and scales */
 .modal-image {
+  position: relative;
   min-height: 220px;
   height: auto;
   overflow: hidden;
@@ -2434,12 +2680,6 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   outline-offset: 3px;
 }
 
-/* Prevent body scroll while mobile menu / modal open */
-.no-scroll {
-  overflow: hidden !important;
-  height: 100%;
-}
-
 /* Header shrink when scrolled (applies via .scrolled class from Header.tsx) */
 .site-header.scrolled {
   padding: 0.25rem 0.75rem;
@@ -2498,6 +2738,14 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
   }
 }
 
+/* Ensure mobile header/nav states are enforced (placed at file end to win cascade) */
+@media (max-width: 920px) {
+  /* Show full menu by default on small screens */
+  .site-header .nav { display: flex !important; flex-direction: column !important; gap: 0.75rem; width: 100% !important; }
+  .site-header .nav.open { display: flex !important; }
+  .site-header .menu-toggle { display: none !important; visibility: hidden !important; }
+}
+
 /* improve tappable area for nav items on small devices */
 @media (max-width: 920px) {
   .nav-list .nav-link {
@@ -2509,12 +2757,6 @@ button,input[type=submit],.btn{background:none;border:0;color:inherit;font:inher
 /* ensure header shrinks smoothly without moving layout unexpectedly */
 .site-header.scrolled {
   transition: padding 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-}
-
-/* if a modal or nav is open, ensure no horizontal scroll */
-.no-scroll {
-  overflow: hidden !important;
-  touch-action: none;
 }
 
 /* Image blur-up (progressive perceived load) */
@@ -2864,6 +3106,15 @@ a.action-button { display: inline-flex; }
   border: 1px solid rgba(var(--accent-rgb),0.06);
 }
 .external-modal__facts {
+
+/* Final override: ensure hamburger toggle shows on small screens and external nav panel works */
+@media (max-width: 920px) {
+  nav#main-nav { display: none !important; }
+  .site-header .nav { display: none !important; }
+  .site-header .menu-toggle { display: inline-flex !important; visibility: visible !important; pointer-events: auto !important; }
+  nav#main-nav.open { display: flex !important; }
+  .nav-backdrop.visible { display: block !important; }
+}
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
@@ -2893,4 +3144,172 @@ a.action-button { display: inline-flex; }
 .external-modal__content a {
   color: var(--accent);
   text-decoration: underline;
+}
+
+/* Final authoritative override: place at true EOF so it wins the cascade. */
+@media (max-width: 920px) {
+  /* hide external header-contained nav, show hamburger toggle */
+  nav#main-nav { display: none !important; }
+  .site-header .nav { display: none !important; }
+  .site-header .menu-toggle { display: inline-flex !important; visibility: visible !important; pointer-events: auto !important; }
+
+  /* open state for external nav panel/backdrop */
+  nav#main-nav.open { display: flex !important; position: fixed !important; left: 0 !important; right: 0 !important; top: var(--header-height,60px) !important; z-index:1402 !important; flex-direction: column !important; background: linear-gradient(180deg, rgba(255,255,255,0.98), #fff) !important; padding: 0.75rem !important; }
+  .nav-backdrop.visible { display: block !important; position: fixed !important; inset: var(--header-height,60px) 0 0 0 !important; background: rgba(2,6,23,0.45) !important; z-index:1401 !important; }
+}
+/* ===== Consolidated Mobile Nav (authoritative, professional) =====
+   Single block to control mobile nav styling and avoid duplicated/conflicting rules.
+   Keeps the header compact, shows a clean floating panel when menu opens, and
+   shifts page content using the --nav-panel-height variable. */
+@media (max-width: 920px) {
+  :root { --header-height: 60px; }
+
+  /* Hide header-contained nav to avoid duplicates and show hamburger */
+  .site-header .nav { display: none !important; }
+  .site-header .menu-toggle { display: inline-flex !important; visibility: visible !important; pointer-events: auto !important; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); }
+
+  /* External floating panel (open state) */
+  nav#main-nav { display: none !important; }
+  /* Polished full-width mobile panel: clean, modern, scrollable */
+  nav#main-nav.open {
+    display: flex !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: var(--header-height, 60px) !important;
+    z-index: 1403 !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    max-height: calc(100vh - var(--header-height, 60px)) !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 0 0 14px 14px !important;
+    box-shadow: 0 18px 60px rgba(2,6,23,0.12) !important;
+    overflow: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Nav list and links inside the panel */
+  /* Panel interior: white sheet with comfortable padding and scroll */
+  nav#main-nav.open .nav-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    width: 100% !important;
+    max-width: 720px !important;
+    margin: 8px auto !important;
+    padding: 8px !important;
+    list-style: none !important;
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 6px 24px rgba(2,6,23,0.06) !important;
+    max-height: calc(100vh - var(--header-height,60px) - 32px) !important;
+    overflow: auto !important;
+  }
+
+  nav#main-nav.open .nav-list li { border-bottom: 1px solid rgba(15,23,42,0.04); }
+  nav#main-nav.open .nav-list li:last-child { border-bottom: none; }
+
+  nav#main-nav.open .nav-link {
+    display: block !important;
+    width: 100% !important;
+    padding: 14px 18px !important;
+    font-size: 1.05rem !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    color: #0f172a !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+  }
+  /* Icon + text layout for nav links */
+  nav#main-nav.open .nav-link { display: flex !important; align-items: center !important; gap: 12px !important; }
+  nav#main-nav.open .nav-icon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; color: rgba(15,23,42,0.6); }
+  nav#main-nav.open .nav-text { flex: 1 1 auto; }
+  /* Accent the icon and text on hover/focus */
+  nav#main-nav.open .nav-link:hover .nav-icon,
+  nav#main-nav.open .nav-link:focus .nav-icon { color: var(--accent) !important; }
+  nav#main-nav.open .nav-link:hover .nav-text,
+  nav#main-nav.open .nav-link:focus .nav-text { color: var(--accent) !important; }
+
+  /* Slightly increase spacing for visual breathing room */
+  nav#main-nav.open .nav-list { padding: 10px !important; }
+
+  nav#main-nav.open .nav-link:hover,
+  nav#main-nav.open .nav-link:focus {
+    background: rgba(var(--accent-rgb), 0.06) !important;
+    color: var(--accent) !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Backdrop sits behind the panel and above content */
+  .nav-backdrop.visible {
+    display: block !important;
+    position: fixed !important;
+    inset: calc(var(--header-height,60px) + 8px) 0 0 0 !important;
+    background: rgba(2,6,23,0.45) !important;
+    z-index: 1402 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Shift main content down by full panel height when open */
+  .site-main {
+    /* padding-top: calc(var(--header-height,60px) + var(--nav-panel-height,0px) + 8px) !important; */
+    transition: padding-top 200ms ease !important;
+  }
+}
+
+/* Desktop header tightening: reduce header height, padding and logo size for wider viewports */
+@media (min-width: 921px) {
+  :root { --header-height: 64px; }
+  .site-header { padding: 0.25rem 0.6rem !important; }
+  .header-inner { min-height: 48px !important; }
+  .logo { height: 2.2rem !important; }
+}
+
+/* Ensure mobile nav panel is above the backdrop and fully visible */
+@media (max-width: 920px) {
+  nav#main-nav.open {
+    z-index: 1403 !important;
+    visibility: visible !important;
+    transform: translateZ(0);
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: var(--header-height, 60px) !important;
+    max-height: calc(100vh - var(--header-height, 60px)) !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .nav-backdrop.visible {
+    z-index: 1401 !important;
+    display: block !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+  }
+
+  /* ensure nav links are visible on top of panel background */
+  nav#main-nav, nav#main-nav .nav-link {
+    color: #0f172a !important;
+    background: transparent !important;
+  }
+}
+
+/* authoritative open-panel rules at EOF to avoid cascade conflicts */
+@media (max-width: 920px) {
+  nav#main-nav { display: none !important; }
+  nav#main-nav.open { display: flex !important; position: fixed !important; left:0; right:0; top:var(--header-height,60px); max-height: calc(100vh - var(--header-height,60px)); overflow:auto; flex-direction:column; padding:0.75rem; gap:0.5rem; background:linear-gradient(180deg, rgba(255,255,255,0.98), #fff); z-index:1403 !important; }
+  .nav-backdrop { display:none; }
+  .nav-backdrop.visible { display:block !important; position:fixed !important; inset: var(--header-height,60px) 0 0 0 !important; background: rgba(2,6,23,0.45) !important; z-index:1402 !important; pointer-events:auto !important; }
+}
+
+/* Ensure the external mobile nav element expands to the computed panel height so
+   its bounding box includes child items (fixes invisible/overflowing items) */
+@media (max-width: 920px) {
+  nav#main-nav.open {
+    min-height: var(--nav-panel-height, auto) !important;
+    height: auto !important;
+    align-items: stretch !important;
+  }
 }

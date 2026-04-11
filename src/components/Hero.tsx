@@ -23,7 +23,7 @@ export default function Hero() {
 
           <div className="hero-actions">
             <button className="cta-button">Get Started</button>
-            <a className="secondary-link" href="#">
+            <a className="secondary-link" href="#programs">
               Learn more
             </a>
           </div>

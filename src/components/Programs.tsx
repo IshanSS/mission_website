@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 // import Img1 from '../assets/first_image.jpeg'
 import Img2 from '../assets/second_image.jpeg'
 import Img3 from '../assets/third_image.jpeg'
@@ -183,19 +184,8 @@ export default function Programs({ showHeader = true }: ProgramsProps) {
       if (e.key === 'Escape') setActive(null)
     }
 
-    const handleClickOutside = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        setActive(null)
-      }
-    }
-
     document.addEventListener('keydown', handleEscape)
-    document.addEventListener('mousedown', handleClickOutside)
-    
-    return () => {
-      document.removeEventListener('keydown', handleEscape)
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
+    return () => document.removeEventListener('keydown', handleEscape)
   }, [])
 
   // Lock body scroll while modal open and focus modal for accessibility
@@ -377,125 +367,150 @@ export default function Programs({ showHeader = true }: ProgramsProps) {
         )}
       </div>
 
-      {/* Modal */}
-      {active && (
-        <div
-          className="program-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          aria-describedby="modal-body"
-        >
-          <div className="modal-backdrop" />
-          <div className="modal-container" >
+      {/* Modal — portaled to document.body so it always appears above the header and scrolls correctly */}
+      {active &&
+        createPortal(
+          <div
+            className="program-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="program-modal-title"
+            aria-describedby="modal-body"
+          >
+            <button
+              type="button"
+              className="modal-backdrop"
+              aria-label="Close program details"
+              onClick={() => setActive(null)}
+            />
             <div
-              className="modal-content"
-              ref={modalRef}
-              tabIndex={-1} /* allow programmatic focus */
-              aria-live="polite"
+              className="modal-container"
+              onClick={(e) => e.stopPropagation()}
+              role="document"
             >
-               {/* Close Button */}
-               <button 
-                 className="modal-close"
-                 onClick={() => setActive(null)}
-               >
-                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                   <path d="M18 6L6 18M6 6L18 18" 
-                     stroke="currentColor" strokeWidth="2" 
-                     strokeLinecap="round" strokeLinejoin="round"/>
-                 </svg>
-               </button>
-              <h2 id="modal-title" style={{ position: 'absolute', left: -9999, top: 'auto' }}>{active.title}</h2>
+              <div
+                className="modal-content"
+                ref={modalRef}
+                tabIndex={-1}
+                aria-live="polite"
+              >
+                <button
+                  type="button"
+                  className="modal-close"
+                  aria-label="Close"
+                  onClick={() => setActive(null)}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path
+                      d="M18 6L6 18M6 6L18 18"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
 
-               {/* Modal Header */}
- <div className="modal-header">
-   <div className="modal-image" aria-hidden="true">
-     <LazyImageSmall src={active.image} alt={active.title} />
-     {active.popular && (
-       <div className="modal-popular-tag">
-         <span>🔥 Most Popular</span>
-       </div>
-     )}
-   </div>
-   <div className="modal-title-section">
-     <div className="modal-category">{active.category}</div>
-     <h2>{active.title}</h2>
-     <p className="modal-summary">{active.summary}</p>
-   </div>
- </div>
+                <div className="modal-header">
+                  <div className="modal-image">
+                    <LazyImageSmall src={active.image} alt="" />
+                    {active.popular && (
+                      <div className="modal-popular-tag">
+                        <span>🔥 Most Popular</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="modal-title-section">
+                    <div className="modal-category">{active.category}</div>
+                    <h2 id="program-modal-title">{active.title}</h2>
+                    <p className="modal-summary">{active.summary}</p>
+                  </div>
+                </div>
 
-               {/* Modal Body */}
-               <div id="modal-body" className="modal-body">
-                 <div className="modal-highlights">
-                   <div className="highlight-item">
-                     <div className="highlight-icon">⏱</div>
-                     <div>
-                       <div className="highlight-label">Duration</div>
-                       <div className="highlight-value">{active.duration}</div>
-                     </div>
-                   </div>
-                   <div className="highlight-item">
-                     <div className="highlight-icon">🎯</div>
-                     <div>
-                       <div className="highlight-label">Level</div>
-                       <div className="highlight-value">{active.level}</div>
-                     </div>
-                   </div>
-                   <div className="highlight-item">
-                     <div className="highlight-icon">💰</div>
-                     <div>
-                       <div className="highlight-label">Fee</div>
-                       <div className="highlight-value price">{active.fee}</div>
-                     </div>
-                   </div>
-                 </div>
+                <div id="modal-body" className="modal-body">
+                  <div className="modal-highlights">
+                    <div className="highlight-item">
+                      <div className="highlight-icon" aria-hidden>
+                        ⏱
+                      </div>
+                      <div>
+                        <div className="highlight-label">Duration</div>
+                        <div className="highlight-value">{active.duration}</div>
+                      </div>
+                    </div>
+                    <div className="highlight-item">
+                      <div className="highlight-icon" aria-hidden>
+                        🎯
+                      </div>
+                      <div>
+                        <div className="highlight-label">Level</div>
+                        <div className="highlight-value">{active.level}</div>
+                      </div>
+                    </div>
+                    <div className="highlight-item">
+                      <div className="highlight-icon" aria-hidden>
+                        💰
+                      </div>
+                      <div>
+                        <div className="highlight-label">Fee</div>
+                        <div className="highlight-value modal-fee">{active.fee}</div>
+                      </div>
+                    </div>
+                  </div>
 
-                 <div className="modal-details">
-                   <h3>Course Overview</h3>
-                   <p>{active.details}</p>
-                 </div>
+                  <div className="modal-details">
+                    <h3>Course Overview</h3>
+                    <p>{active.details}</p>
+                  </div>
 
-                 <div className="modal-features">
-                   <h3>What You'll Learn</h3>
-                   <div className="features-grid">
-                     {active.features.map((feature, index) => (
-                       <div key={index} className="feature-item">
-                         <div className="feature-check">
-                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                             <path d="M20 6L9 17L4 12" stroke="currentColor" 
-                               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                           </svg>
-                         </div>
-                         <span>{feature}</span>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
+                  <div className="modal-features">
+                    <h3>What You&apos;ll Learn</h3>
+                    <div className="features-grid">
+                      {active.features.map((feature, index) => (
+                        <div key={index} className="feature-item">
+                          <div className="feature-check" aria-hidden>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M20 6L9 17L4 12"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                 <div className="modal-actions">
-                   <button className="action-button primary">
-                     <span>Apply Now</span>
-                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                       <path d="M5 12H19M19 12L12 5M19 12L12 19" 
-                         stroke="currentColor" strokeWidth="2" 
-                         strokeLinecap="round" strokeLinejoin="round"/>
-                     </svg>
-                   </button>
-                   <button className="action-button secondary">
-                     <span>📞 Request Info</span>
-                   </button>
-                   <button 
-                     className="action-button outline"
-                     onClick={() => setActive(null)}
-                   >
-                     <span>Browse More</span>
-                   </button>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
-       )}
-     </section>
-   )
- }
+                  <div className="modal-actions">
+                    <a className="action-button primary" href="#contact" onClick={() => setActive(null)}>
+                      <span>Apply Now</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path
+                          d="M5 12H19M19 12L12 5M19 12L12 19"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </a>
+                    <a className="action-button secondary" href="#contact" onClick={() => setActive(null)}>
+                      <span>📞 Request Info</span>
+                    </a>
+                    <button type="button" className="action-button outline" onClick={() => setActive(null)}>
+                      <span>Browse More</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+    </section>
+  )
+}
