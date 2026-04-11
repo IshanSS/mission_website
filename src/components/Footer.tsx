@@ -1,4 +1,4 @@
-import Mission_logo from '../assets/Mission_logo.svg'
+import Mission_logo from '../assets/mission_logo.svg'
 
 export default function Footer() {
   return (
