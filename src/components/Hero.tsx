@@ -10,7 +10,7 @@ export default function Hero() {
       aria-labelledby="hero-title"
     >
       <div className="relative z-[1] mx-auto max-w-[1100px] px-5 text-center">
-        <p className="mb-2 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand">
+        <p className="mb-2 inline-block rounded-full bg-black/70 backdrop-blur-sm px-3 py-1 text-xs font-bold uppercase tracking-widest text-green-500">
           Welcome to Mission World Education
         </p>
         <h1

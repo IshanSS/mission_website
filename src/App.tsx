@@ -153,9 +153,18 @@ function App() {
   }, [modalOpen])
 
   useEffect(() => {
-    if (modalOpen) document.body.classList.add('no-scroll')
-    else document.body.classList.remove('no-scroll')
-    return () => document.body.classList.remove('no-scroll')
+    const root = document.documentElement
+    if (modalOpen) {
+      root.classList.add('no-scroll')
+      document.body.classList.add('no-scroll')
+    } else {
+      root.classList.remove('no-scroll')
+      document.body.classList.remove('no-scroll')
+    }
+    return () => {
+      root.classList.remove('no-scroll')
+      document.body.classList.remove('no-scroll')
+    }
   }, [modalOpen])
 
   useEffect(() => {
@@ -221,7 +230,6 @@ function App() {
             setModalTitle(titleFromDoc)
             setModalHref(absHref)
             setModalOpen(true)
-            document.body.classList.add('no-scroll')
 
             setTimeout(() => {
               const closeBtn = document.querySelector('.external-modal__close') as HTMLButtonElement | null
@@ -294,7 +302,7 @@ function App() {
       img: Team3,
       name: 'Srijana Shrestha',
       role: 'Japanese Language Instructor',
-      bio: 'Japan',
+      bio: 'Japanese language instruction with a focus on JLPT levels and conversational skills for study and work abroad.',
     },
     {
       img: Team4,
@@ -314,7 +322,7 @@ function App() {
 
         <main
           id="content"
-          className="flex-1 pt-[calc(var(--header-height,4.5rem)+8px)] transition-[padding] duration-200"
+          className="flex-auto pt-[calc(var(--header-height,4.5rem)+8px)] transition-[padding] duration-200"
         >
           <Hero />
 
@@ -344,41 +352,51 @@ function App() {
 
           <section
             id="team"
-            className="bg-gradient-to-b from-white to-slate-50 px-4 py-12 min-[768px]:px-6"
+            className="bg-gradient-to-b from-white to-slate-50 px-4 py-12 sm:px-6 lg:py-16"
             aria-labelledby="team-title"
           >
             <div className="mx-auto max-w-[1200px] text-left">
-              <h2 id="team-title" className="mb-2 text-2xl font-bold text-slate-900">
+              <h2 id="team-title" className="mb-2 text-2xl font-bold text-slate-900 sm:text-3xl">
                 Meet Our Instructors
               </h2>
-              <p className="mb-6 text-slate-500">
+              <p className="mb-8 max-w-2xl text-slate-500 sm:text-lg">
                 Experienced trainers and counsellors committed to your success.
               </p>
-              <div className="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 min-[1024px]:grid-cols-3">
+              <ul className="m-0 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:items-stretch">
                 {team.map((m) => (
-                  <article
-                    key={m.name}
-                    className="flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5"
-                  >
-                    <div className="overflow-hidden">
-                      <LazyImage src={m.img} alt={m.name} className="h-[220px] w-full object-cover" />
-                    </div>
-                    <div className="flex flex-1 flex-col gap-2 p-4">
-                      <h3 className="m-0 text-base font-bold text-slate-900">{m.name}</h3>
-                      <p className="m-0 text-[0.95rem] font-semibold text-slate-500">{m.role}</p>
-                      <p className="m-0 flex-1 text-slate-700">{m.bio}</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a className={instructorBtnOutline} href="mailto:missioncomputer8@gmail.com">
-                          Contact
-                        </a>
-                        <a className={instructorBtnSecondary} href="#contact">
-                          Book Session
-                        </a>
+                  <li key={m.name} className="flex h-full min-h-0">
+                    <article className="flex h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md shadow-slate-900/[0.06] ring-1 ring-slate-900/[0.04] transition-shadow duration-200 hover:shadow-lg">
+                      <div className="relative aspect-[5/4] w-full shrink-0 overflow-hidden bg-slate-100 sm:aspect-[4/3]">
+                        <LazyImage
+                          src={m.img}
+                          alt={m.name}
+                          className="absolute inset-0 h-full w-full object-cover object-top"
+                        />
                       </div>
-                    </div>
-                  </article>
+                      <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
+                        <div className="shrink-0">
+                          <h3 className="m-0 text-lg font-bold leading-snug text-slate-900">{m.name}</h3>
+                          <p className="mt-1.5 m-0 text-sm font-semibold text-brand">{m.role}</p>
+                        </div>
+                        <p
+                          className="m-0 min-h-[4.5rem] flex-1 text-sm leading-relaxed text-slate-600 line-clamp-4 sm:min-h-[5rem] sm:line-clamp-5"
+                          title={m.bio}
+                        >
+                          {m.bio}
+                        </p>
+                        <div className="mt-auto flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                          <a className={instructorBtnOutline} href="mailto:missioncomputer8@gmail.com">
+                            Contact
+                          </a>
+                          <a className={instructorBtnSecondary} href="#contact">
+                            Book Session
+                          </a>
+                        </div>
+                      </div>
+                    </article>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           </section>
 

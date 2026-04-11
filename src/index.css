@@ -38,11 +38,14 @@
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     scroll-padding-top: calc(var(--header-height) + 8px);
-    @apply overflow-x-hidden antialiased;
+    /* Only clip horizontal overflow; keep vertical scrolling on the document */
+    overflow-x: clip;
+    overflow-y: auto;
+    @apply antialiased;
   }
 
   body {
-    @apply m-0 flex min-h-screen min-w-[320px] flex-col overflow-x-hidden text-slate-900;
+    @apply m-0 min-h-screen min-w-[320px] overflow-x-clip text-slate-900;
     padding-left: env(safe-area-inset-left, 0);
     padding-right: env(safe-area-inset-right, 0);
     overscroll-behavior-y: contain;
@@ -54,8 +57,9 @@
     background-size: cover;
   }
 
+  /* Column layout for sticky footer; no flex-1 on root — that paired with body flex locked page height */
   #root {
-    @apply flex min-h-screen flex-1 flex-col;
+    @apply flex min-h-screen flex-col;
   }
 
   img {
@@ -70,9 +74,8 @@ body.no-scroll {
   overscroll-behavior: none;
 }
 
-body.no-scroll {
-  height: 100%;
-}
+/* Avoid height:100% here — it pins body to the viewport and prevents the document from
+   growing when no-scroll is toggled off in some browsers. */
 
 @layer components {
   .skip-link {
